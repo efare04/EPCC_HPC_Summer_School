@@ -1,0 +1,82 @@
+clear
+clc
+
+% Loops through files 0001.sdf->0050.sdf. To include 0000.sdf, change
+% numfiles to 51 and the initial value of idx to 0.
+numfiles=50;
+
+renderdensity=true;
+renderxpx=true;
+
+% Predefines cell for gif frames.
+im=cell(1,numfiles);
+
+for idx=1:numfiles
+    % Extracts data from current sdf file.
+    filename=sprintf('%04d.sdf',idx);
+    timestep=GetDataSDF(filename);
+
+    clf
+    figh=figure;
+    
+    if renderdensity==true
+        % Extracts data for density.
+        density=timestep.Derived.Number_Density.data;
+
+        % Plots density for the current frame.
+        imagesc(density');
+        title('Electron Density','Density:5e24  Intensity:2e20');
+        colorbar;
+
+        % Commented out below: saves a png of each frame.
+        %saveas(figh,['density_test_figure_' num2str(idx,'%04d') '.png']);
+
+        % Saves plots as a gif.
+        frame=getframe(figh);
+        im{idx}=frame2im(frame);
+        densityFile="density_8.gif";
+        [A,map]=rgb2ind(im{idx},256);
+        if idx == 1
+            imwrite(A,map,densityFile,"gif","LoopCount",Inf,"DelayTime",0.1);
+        else
+            imwrite(A,map,densityFile,"gif","WriteMode","append","DelayTime",0.1);
+        end
+    end
+
+    if renderxpx==true
+        % Extracts data for position in x and y, and momentum in x.
+        x=timestep.Grid.x_px.electron.x;
+        y=timestep.Grid.x_px.electron.y;
+        px=timestep.dist_fn.x_px.electron.data;
+        
+        % Defines the limits of the x-axis.
+        xMin=-4E-5+max(0,2.997063793E8*(timestep.time-(8E-5/(1.5*2.997063793E8))));
+        xMax=xMin+8E-5;
+
+        % Plots x-px for this frame.
+        scatter(x,px,2,'k','filled','MarkerFaceAlpha', 0.2); %changed 0.05 to 0.2
+        axis([xMin,xMax,-2E-21,1.9E+13]);
+        xlabel('Position (m)');
+        ylabel('Momentum (kgms^-^1)');
+        text(xMax,1.9E+13,['t = ' num2str(timestep.time) 's'],'HorizontalAlignment','right','VerticalAlignment','top','FontSize',12);
+        % Change subtitle to show run parameters.
+        title('Momentum Distribution','Density:5e24  Intensity:2e20');
+
+        % Commented out below: saves a png of each frame.
+        %saveas(figh,['xpx_test_figure_' num2str(idx,'%04d') '.png']);
+
+        % Save plots as a gif.
+        frame=getframe(figh);
+        im{idx}=frame2im(frame);
+        xpxFile="x_px_8.gif";
+        [A,map] = rgb2ind(im{idx},256);
+        if idx == 1
+            imwrite(A,map,xpxFile,"gif","LoopCount",Inf,"DelayTime",0.1);
+        else
+            imwrite(A,map,xpxFile,"gif","WriteMode","append","DelayTime",0.1);
+        end
+    end
+
+% Reports progress from 0->1.
+progress=idx/numfiles
+end
