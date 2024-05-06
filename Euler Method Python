@@ -1,0 +1,52 @@
+## Uses the Euler method to solve the equation of motion for SHM.
+## Saves the results for various values of dt into arrays to show the effect of interval size on the accuracy of the approximation.
+
+import math
+import numpy as np
+
+P = 1.3                   # Period of SHM.
+w = 2*math.pi/P           # Rotational frequency of SHM.
+A = 13                    # Amplitude.
+
+t = 0
+x = A                     # Initial displacement; the pendulum starts at amplitude.
+
+dt = 1                 # Step in t; decrease for a more precise approximation.
+t_final = 7               # The loop runs until t = t_final.
+
+# Defines the empty arrays for later.
+x_approx = np.zeros(6)
+intervals = np.zeros(6)
+iteration = np.zeros(6)
+runtime = np.zeros(6)
+x_analytical = np.zeros(6)
+
+n=0
+while n < 6:
+    
+    ## The Euler method.
+    while t < t_final:
+        vel = -w*A*math.sin(w*t)    # Differential equation: velocity(time).
+        x = x + vel*dt              # Small change in x: x1 = x0 + deltax.
+        t = t + dt                  # Small change in t.
+    
+    x_approx[n] = x                 # Saves the approximation for x to a list.
+    intervals[n] = dt
+    iteration[n] = n + 1            # For the first run through the loop, n=0. For the second, n=1. etc.
+    runtime[n] = t
+    x_analytical[n] = A*math.cos(w*t)   # Actual value of x for the final value of t, from the analytical solution.
+    
+    
+    dt = dt/10        # Decreases dt by a factor of 10 each time.
+    t = 0                 # Resets t to zero.
+    x = A
+    n = n + 1             # Moves the loop on a step
+    
+#print("Iteration:",iteration)
+print("x_approx:    ",x_approx)
+print("x_analytical:",x_analytical)
+print("Discrepancy: ",x_approx-x_analytical)
+print("Interval:    ",intervals)
+#print("Runtime:",runtime)
+
+# You should observe that, as the interval gets smaller, so does the discrepancy between the approximate value and the analytical solution.
